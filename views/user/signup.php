@@ -4,10 +4,10 @@
 /* @var $form yii\bootstrap\ActiveForm */
 /* @var $model \app\models\SignupForm */
 
-use yii\helpers\Html;
 use yii\bootstrap\ActiveForm;
+use yii\helpers\Html;
 
-$this->title = '注册';
+$this->title = '创建用户';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="site-signup">

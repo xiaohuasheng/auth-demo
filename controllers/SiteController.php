@@ -2,17 +2,13 @@
 
 namespace app\controllers;
 
+use app\models\ContactForm;
+use app\models\LoginForm;
 use Yii;
 use yii\filters\AccessControl;
-use yii\web\Controller;
-use yii\web\NotFoundHttpException;
-use yii\web\Response;
 use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
-use app\models\SignupForm;
-use app\models\AuthItem;
-use app\models\AuthItemAssignment;
+use yii\web\Controller;
+use yii\web\Response;
 
 
 class SiteController extends Controller
@@ -129,26 +125,5 @@ class SiteController extends Controller
         return $this->render('about');
     }
 
-    /**
-     * Signs user up.
-     *
-     * @return mixed
-     */
-    public function actionSignup()
-    {
-        $model = new SignupForm();
-        if ($model->load(Yii::$app->request->post())) {
-
-            if ($user = $model->signup()) {
-                if (Yii::$app->getUser()->login($user)) {
-                    return $this->goHome();
-                }
-            }
-        }
-
-        return $this->render('signup', [
-            'model' => $model,
-        ]);
-    }
 
 }

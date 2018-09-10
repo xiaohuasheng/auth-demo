@@ -2,14 +2,18 @@
 
 namespace app\controllers;
 
+use app\models\Auth;
 use app\models\AuthItem;
 use app\models\authItemAssignment;
-use Yii;
+use app\models\SignupForm;
 use app\models\User;
 use app\models\UserSearch;
-use yii\web\Controller;
-use yii\web\NotFoundHttpException;
+use Yii;
+use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
+use yii\web\Controller;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * UserController implements the CRUD actions for User model.
@@ -22,6 +26,20 @@ class UserController extends Controller
     public function behaviors()
     {
         return [
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'actions' => ['login', 'error'],
+                        'allow' => true,
+                    ],
+                    [
+                        'actions' => ['logout', 'index', 'signup', 'privilege'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
@@ -127,8 +145,22 @@ class UserController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
+    /**
+     * actionPrivilege
+     * @description:
+     * @param $id
+     * @return string|\yii\web\Response
+     * @throws ForbiddenHttpException
+     * @author watson.zeng
+     * @time 2018-09-10 20:20
+     */
     public function actionPrivilege($id)
     {
+        $loginUid = Yii::$app->user->id;
+        $can = (new Auth())->can($loginUid, Auth::PERMISSION_DISTRIBUTE);
+        if (!$can) {
+            throw new ForbiddenHttpException('对不起，你没有进行该操作的权限。');
+        }
         if (empty($id)) {
             throwException(new NotFoundHttpException('请选择用户'));
         }
@@ -145,15 +177,7 @@ class UserController extends Controller
         }
 
         //2、查当前用户权限
-        $authItemAssignment = authItemAssignment::find()->select(['item_id'])
-            ->where(['uid' => $id])
-            ->all();
-        $authItemAssignmentArray = [];
-        if (!empty($authItemAssignment)) {
-            foreach ($authItemAssignment as $item) {
-                $authItemAssignmentArray[] = $item->item_id;
-            }
-        }
+        $authItemAssignmentArray = (new Auth())->getPermissionByUser($id);
 
         //3、更新分配表
         if (Yii::$app->request->post("newPri")) {
@@ -178,5 +202,31 @@ class UserController extends Controller
             'allPrivilegesArray' => $allPrivilegesArray,
         ]);
 
+    }
+
+    /**
+     * Signs user up.
+     *
+     * @return mixed
+     * @throws ForbiddenHttpException
+     */
+    public function actionSignup()
+    {
+        $id = Yii::$app->user->id;
+        $can = (new Auth())->can($id, Auth::PERMISSION_CREATE_USER);
+        if (!$can) {
+            throw new ForbiddenHttpException('对不起，你没有进行该操作的权限。');
+        }
+        $model = new SignupForm();
+        if ($model->load(Yii::$app->request->post())) {
+
+            if ($user = $model->signup()) {
+                return $this->goHome();
+            }
+        }
+
+        return $this->render('signup', [
+            'model' => $model,
+        ]);
     }
 }

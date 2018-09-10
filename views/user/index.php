@@ -1,7 +1,7 @@
 <?php
 
-use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\helpers\Html;
 
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\UserSearch */
@@ -25,7 +25,7 @@ $this->params['breadcrumbs'][] = $this->title;
 //            'auth_key',
 //            'password_hash',
 //            'password_reset_token',
-            //'email:email',
+            'email:email',
             //'status',
             //'created_at',
             //'updated_at'

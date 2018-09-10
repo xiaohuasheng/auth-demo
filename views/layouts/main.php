@@ -3,11 +3,11 @@
 /* @var $this \yii\web\View */
 /* @var $content string */
 
-use yii\helpers\Html;
+use app\assets\AppAsset;
 use yii\bootstrap\Nav;
 use yii\bootstrap\NavBar;
+use yii\helpers\Html;
 use yii\widgets\Breadcrumbs;
-use app\assets\AppAsset;
 
 AppAsset::register($this);
 ?>
@@ -38,7 +38,7 @@ AppAsset::register($this);
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
             ['label' => '用户列表', 'url' => ['/user/index']],
-            ['label' => '创建用户', 'url' => ['/site/signup']],
+            ['label' => '创建用户', 'url' => ['/user/signup']],
             Yii::$app->user->isGuest ? (
                 ['label' => '登录', 'url' => ['/site/login']]
             ) : (
