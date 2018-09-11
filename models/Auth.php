@@ -9,6 +9,7 @@
 namespace app\models;
 
 
+use Yii;
 use yii\db\Query;
 
 class Auth
@@ -100,5 +101,70 @@ class Auth
                 $this->getChildrenRecursive($child, $childrenList, $result);
             }
         }
+    }
+
+    /**
+     * addItem
+     * @description:
+     * @param $item
+     * @param $type
+     * @return bool|int
+     * @throws \yii\db\Exception
+     * @author watson.zeng
+     * @time 2018-09-11 19:43
+     */
+    public function addItem($item, $type)
+    {
+        if (empty($item) || empty($type)) {
+            return false;
+        }
+        $param = [
+            'item_name' => $item,
+            'type' => $type
+        ];
+        $res = Yii::$app->db->createCommand()
+            ->insert('auth_item', $param)
+            ->execute();
+        return $res;
+    }
+
+    public function getRoleByUser($uid)
+    {
+        if (empty($uid)) {
+            return [];
+        }
+
+        $role = (new Query())->select('i.id,i.item_name')
+            ->from('auth_item as i')
+            ->leftJoin('auth_item_assignment as a', 'i.id=a.item_id')
+            ->where(['i.type' => self::TYPE_ROLE])
+            ->all();
+        return $role;
+    }
+
+    public function getChildRoles($roleId)
+    {
+        $result = [];
+        $this->getChildrenRecursive($roleId, $this->getChildrenList(), $result);
+        $roleList = array_keys($result);
+        return $roleList;
+    }
+
+    public function getPermissionByRole($roleId)
+    {
+        if (empty($roleId)) {
+            return [];
+        }
+        $childrenList = $this->getChildrenList();
+        if (empty($childrenList)) {
+            return [];
+        }
+        $result = [];
+        $this->getChildrenRecursive($roleId, $childrenList, $result);
+        $permissions = (new Query())->select('id')
+            ->from('auth_item')
+            ->where(['id' => array_keys($result)])
+            ->column();
+        return $permissions ? $permissions : [];
     }
 }
