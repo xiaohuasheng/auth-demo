@@ -1,14 +1,14 @@
 <?php
 
+use yii\bootstrap\ActiveForm;
 use yii\helpers\Html;
-use \yii\bootstrap\ActiveForm;
 
 
 /* @var $this yii\web\View */
 /* @var $model app\models\User */
 
-$this->title = '权限设置';
-$this->params['breadcrumbs'][] = ['label' => '分配权限', 'url' => ['index']];
+$this->title = '角色设置';
+$this->params['breadcrumbs'][] = ['label' => '分配角色', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="admin-user-update">

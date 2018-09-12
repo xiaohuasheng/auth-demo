@@ -128,20 +128,6 @@ class Auth
         return $res;
     }
 
-    public function getRoleByUser($uid)
-    {
-        if (empty($uid)) {
-            return [];
-        }
-
-        $role = (new Query())->select('i.id,i.item_name')
-            ->from('auth_item as i')
-            ->leftJoin('auth_item_assignment as a', 'i.id=a.item_id')
-            ->where(['i.type' => self::TYPE_ROLE])
-            ->all();
-        return $role;
-    }
-
     public function getChildRoles($roleId)
     {
         $result = [];
@@ -217,5 +203,58 @@ class Auth
             ->execute();
         return $res;
 
+    }
+
+    public function getRoleByUser($uid)
+    {
+        $directRole = $this->getDirectRoleByUser($uid);
+        $inheritedRole = $this->getInheritedRoleByUser($uid);
+        return array_merge($directRole, $inheritedRole);
+    }
+
+    public function getDirectRoleByUser($uid)
+    {
+        $roleList = (new Query())->select('a.item_id')
+            ->from('auth_item_assignment as a')
+            ->leftJoin('auth_item as i', 'a.item_id=i.id')
+            ->where([
+                'i.type' => self::TYPE_ROLE,
+                'a.uid' => $uid
+            ])
+            ->column();
+        return $roleList ? $roleList : [];
+    }
+
+    public function getInheritedRoleByUser($uid)
+    {
+        $query = (new Query())->select('item_id')
+            ->from('auth_item_assignment')
+            ->where(['uid' => (int)$uid]);
+        $itemList = $query->column();
+        if (empty($itemList)) {
+            return [];
+        }
+
+        $result = [];
+        //获取所有的父子关系，角色-权限
+        $childrenList = $this->getChildrenList();
+        foreach ($itemList as $item) {
+            $this->getChildrenRecursive($item, $childrenList, $result);
+        }
+        $itemIdList = array_keys($result);
+        if (empty($itemIdList)) {
+            return [];
+        }
+        $roleQuery = (new Query())->select('id')
+            ->from('auth_item')
+            ->where([
+                'type' => self::TYPE_ROLE,
+                'id' => $itemIdList
+            ])
+            ->column();
+        if (empty($roleQuery)) {
+            return [];
+        }
+        return $roleQuery;
     }
 }

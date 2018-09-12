@@ -164,9 +164,9 @@ class UserController extends Controller
         if (empty($id)) {
             throwException(new NotFoundHttpException('请选择用户'));
         }
-        //1、查所有权限
+        //1、查所有角色
         $allPrivileges = AuthItem::find()->select(['id', 'item_name'])
-            ->where(['type' => 2])
+            ->where(['type' => Auth::TYPE_ROLE])
             ->orderBy('id')
             ->all();
         $allPrivilegesArray = [];
@@ -176,8 +176,8 @@ class UserController extends Controller
             }
         }
 
-        //2、查当前用户权限
-        $authItemAssignmentArray = (new Auth())->getPermissionByUser($id);
+        //2、查当前用户角色
+        $authItemAssignmentArray = (new Auth())->getRoleByUser($id);
 
         //3、更新分配表
         if (Yii::$app->request->post("newPri")) {
