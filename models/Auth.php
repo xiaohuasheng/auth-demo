@@ -167,4 +167,55 @@ class Auth
             ->column();
         return $permissions ? $permissions : [];
     }
+
+    /**
+     * addAssignment
+     * @description:
+     * @param $uid
+     * @param $itemId
+     * @return int
+     * @throws \yii\db\Exception
+     * @author watson.zeng
+     * @time 2018-09-11 20:07
+     */
+    public function addAssignment($uid, $itemId)
+    {
+        if (empty($uid) || empty($itemId)) {
+            return false;
+        }
+        $param = [
+            'uid' => intval($uid),
+            'item_id' => intval($itemId)
+        ];
+        $res = Yii::$app->db->createCommand()
+            ->insert('auth_item_assignment', $param)
+            ->execute();
+        return $res;
+    }
+
+    /**
+     * addChild
+     * @description:
+     * @param $parent
+     * @param $child
+     * @return int
+     * @throws \yii\db\Exception
+     * @author watson.zeng
+     * @time 2018-09-11 20:09
+     */
+    public function addChild($parent, $child)
+    {
+        if (empty($parent) || empty($child)) {
+            return false;
+        }
+        $param = [
+            'parent' => intval($parent),
+            'child' => intval($child)
+        ];
+        $res = Yii::$app->db->createCommand()
+            ->insert('auth_item_child', $param)
+            ->execute();
+        return $res;
+
+    }
 }
